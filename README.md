@@ -1,6 +1,6 @@
 # PlantVista 3D
 
-Frontend-only industrial monitoring demo built with React, TypeScript, Vite, Three.js (React Three Fiber/Drei), Tailwind and Zustand.
+Frontend-only industrial monitoring demo built with React, TypeScript, Vite, Tailwind and Zustand.
 
 ## Run
 

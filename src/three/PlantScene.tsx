@@ -37,9 +37,23 @@ function Label({ id, at }: { id: EquipmentId; at: V3 }) {
 }
 function Selectable({ id, position, children }: { id: EquipmentId; position: V3; children: ReactNode }) {
   const selected = usePlant(s => s.selected), mode = usePlant(s => s.mode), select = usePlant(s => s.select); const [hovered, hover] = useState(false);
+  const pulse = useRef<THREE.Mesh>(null), pulseMaterial = useRef<THREE.MeshBasicMaterial>(null);
+  const isSelected = selected === id, faultSelected = id === 'P-101' && mode === 'FAULT';
+  useFrame(state => {
+    if (!pulse.current || !pulseMaterial.current || !isSelected) return;
+    const wave = (Math.sin(state.clock.elapsedTime * 3.4) + 1) / 2;
+    const scale = .92 + wave * .22;
+    pulse.current.scale.set(scale, scale, scale);
+    pulseMaterial.current.opacity = .28 + wave * .58;
+  });
   const choose = (e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); select(id); };
   return <group position={position} onClick={choose} onPointerOver={e => { e.stopPropagation(); hover(true); }} onPointerOut={() => hover(false)}>
-    {children}{(selected === id || hovered) && <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, .075, 0]}><ringGeometry args={[1.7, 1.74, 64]}/><meshBasicMaterial color={id === 'P-101' && mode === 'FAULT' ? '#ff4949' : '#3fc8fa'} transparent opacity={.8}/></mesh>}
+    {children}
+    {(isSelected || hovered) && <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, .075, 0]}><ringGeometry args={[1.55, 1.68, 64]}/><meshBasicMaterial color={faultSelected ? '#ff3344' : '#55dcff'} transparent opacity={isSelected ? 1 : .55} depthWrite={false}/></mesh>}
+    {isSelected && <>
+      <mesh ref={pulse} rotation={[-Math.PI / 2, 0, 0]} position={[0, .09, 0]}><ringGeometry args={[1.82, 1.94, 64]}/><meshBasicMaterial ref={pulseMaterial} color={faultSelected ? '#ff3045' : '#18cfff'} transparent opacity={.65} depthWrite={false}/></mesh>
+      <pointLight position={[0, 2.2, 0]} color={faultSelected ? '#ff263d' : '#22cfff'} intensity={faultSelected ? 8 : 5} distance={5.5}/>
+    </>}
   </group>;
 }
 function Tank({ id, position, level }: { id: 'T-101' | 'T-102'; position: V3; level: number }) {
